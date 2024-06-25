@@ -1,0 +1,110 @@
+install.packages("readxl")
+install.packages("dplyr")
+install.packages("stringr")
+install.packages("visNetwork")
+
+library(readxl)
+library(dplyr)
+library(stringr)
+library(igraph)
+library(visNetwork)
+
+tweets_df <- (updated_Twitter_data_December_2022)
+
+print(colnames(tweets_df))
+
+username <- ("Twitter Screen Name...4")
+tweet <- ("Hit Sentence")
+
+print(colnames(tweets_df))
+
+extract_retweet_user <- function(tweet) {
+  retweet_match <- str_match(tweet, "^RT @(\\w+):")
+  return(ifelse(!is.na(retweet_match[,2]), retweet_match[,2], NA))
+}
+
+tweets_df <- tweets_df %>%
+  mutate(retweeted_user = sapply(tweet, extract_retweet_user))
+
+retweets_df <- tweets_df %>% filter(!is.na(retweeted_user))
+
+edges_df <- retweets_df %>%
+  select(source = username, target = retweeted_user)
+
+head(edges_df)
+
+g <- graph_from_data_frame(edges_df, directed = TRUE)
+
+plot(g)
+
+degree_centrality <- degree(g, mode = "all")
+print(degree_centrality)
+
+library(igraph)
+
+g <- graph_from_data_frame(edges_df, directed = TRUE)
+
+layout <- layout_with_fr(g)
+
+V(g)$size <- degree(g) * 2   # Node size based on degree centrality
+V(g)$color <- "skyblue"      # Node color
+V(g)$label <- V(g)$name      # Use node names as labels
+V(g)$label.cex <- 0.7        # Size of the labels
+V(g)$label.color <- "black"  # Color of the labels
+V(g)$frame.color <- NA       # No border around the nodes
+
+E(g)$arrow.size <- 0.5       # Arrow size
+E(g)$width <- 1              # Edge width
+E(g)$color <- "gray"         # Edge color
+E(g)$curved <- 0.2           # Curved edges for better visibility
+
+plot(g, layout = layout, vertex.label.cex = 0.8, edge.arrow.size = 0.5,
+     vertex.label.dist = 1, vertex.label.degree = 0, main = "Network Graph")
+
+png('/path/to/save/enhanced_network_plot.png', width = 1000, height = 1000)
+plot(g, layout = layout, vertex.label.cex = 0.8, edge.arrow.size = 0.5,
+     vertex.label.dist = 1, vertex.label.degree = 0, main = "Network Graph")
+dev.off()
+
+threshold <- 5  # Only include nodes with degree > 5
+subgraph <- induced_subgraph(g, V(g)[degree(g, mode = "all") > threshold])
+
+plot(subgraph, layout = layout_with_fr, vertex.size = V(subgraph)$size,
+     vertex.label = NA, main = "Filtered Network Graph")
+
+
+g_undirected <- as.undirected(g, mode = "collapse")
+
+communities <- cluster_louvain(g_undirected)
+
+membership_vector <- membership(communities)
+
+V(g)$community <- membership_vector
+
+V(g)$size <- degree(g) * 2
+
+plot(g, 
+     layout = layout_with_fr,  # Fruchterman-Reingold layout
+     vertex.color = membership_vector,  # Color nodes by community
+     vertex.label = NA,  # Hide node labels
+     main = "Network Graph with Louvain Community Detection"  # Plot title
+)
+
+layout_kk <- layout_with_kk(g)
+
+plot(g, 
+     layout = layout_kk,  # Kamada-Kawai layout
+     vertex.label = NA,  # Hide node labels
+     main = "Kamada-Kawai Layout with Community Detection"  # Plot title
+)
+
+V(g)$size <- scale(degree(g), center = FALSE, scale = 5)  # Scale sizes based on degree centrality
+
+V(g)$color <- ifelse(degree(g) > mean(degree(g)) + sd(degree(g)), "red", membership_vector)
+
+plot(g, 
+     layout = layout_with_fr,  # Fruchterman-Reingold layout
+     vertex.label = NA,  # Hide node labels
+     main = "Network Graph Highlighting Important Nodes"  # Plot title
+)
+
