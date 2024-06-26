@@ -1,0 +1,22 @@
+install.packages("readxl")
+install.packages("dplyr")
+install.packages("lubridate")
+
+install.packages("readxl")
+install.packages("dplyr")
+install.packages("lubridate")
+
+library(readxl)
+library(dplyr)
+library(lubridate)
+
+file_list <- list.files(path = "/Users/katiescrivani/Downloads/Rutgers/SICSS copy", pattern = "*.csv", full.names = TRUE)
+
+file1 <- read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated_data_FebMarch_2023 .csv")
+file2 <- read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated data January 2023 .csv")
+file3 <-read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated data Oct - December 2023 .csv")
+file4<-read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated Twitter data December 2022.csv")
+file5<-read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated data April 1 - June 30.csv")
+file6<-read.csv("/Users/katiescrivani/Downloads/Rutgers/SICSS copy/updated data July - Sept 2023 .csv")
+
+df_two<-bind_rows(file1,file2,file3,file4,file5,file6)
