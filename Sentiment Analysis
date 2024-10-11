@@ -1,19 +1,9 @@
-install.packages("tm")
-install.packages("SnowballC")
-install.packages("dplyr")
-install.packages("tidyr")
-install.packages("stringr")
-install.packages("tidytext")
-install.packages("data.table")
-install.packages("textclean")
-install.packages("ggplot2")
-
-library(tm)         # For text mining
-library(SnowballC)  # For text stemming
-library(dplyr)      # For data manipulation
-library(tidyr)      # For data tidying
-library(stringr)    # For string manipulation
-library(tidytext)   # For text mining and sentiment analysis
+library(tm)         
+library(SnowballC)  
+library(dplyr)      
+library(tidyr)      
+library(stringr)    
+library(tidytext)   
 library(data.table)
 library(textclean)
 library(ggplot2)
@@ -25,34 +15,33 @@ setnames(tweets_df, "Hit Sentence", "tweet")
 
 tweets_df <-
   tweets_df %>% 
-  mutate(tweet = str_remove_all(tweet, " ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)"),   # Remove URLs
-         tweet = str_replace_all(tweet, "&amp;", "and"),                       # Replace &amp; with 'and'
-         tweet = str_remove_all(tweet, "[[:punct:]]"),                         # Remove punctuation
-         tweet = str_remove_all(tweet, "^RT:? "),                              # Remove 'RT:' at the beginning
-         tweet = str_remove_all(tweet, "@[[:alnum:]]+"),                       # Remove @mentions
-         tweet = str_remove_all(tweet, "#[[:alnum:]]+"),                       # Remove hashtags
-         tweet = str_replace_all(tweet, "\\\n", " "),                          # Replace newline characters with space
-         tweet = str_to_lower(tweet),                                          # Convert to lowercase
+  mutate(tweet = str_remove_all(tweet, " ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)"),  
+         tweet = str_replace_all(tweet, "&amp;", "and"),                       
+         tweet = str_remove_all(tweet, "[[:punct:]]"),                         
+         tweet = str_remove_all(tweet, "^RT:? "),                              
+         tweet = str_remove_all(tweet, "@[[:alnum:]]+"),                       
+         tweet = str_remove_all(tweet, "#[[:alnum:]]+"),                       
+         tweet = str_replace_all(tweet, "\\\n", " "),                         
+         tweet = str_to_lower(tweet),                                          
          tweet = str_trim(tweet, "both"),
          tweet = str_remove_all(tweet, "\\.\\.\\."),
          tweet = gsub("[^\x01-\x7F]", "", tweet))
 
 tweets_df <-
   tweets_df %>% 
-  mutate(username = str_remove_all(username, " ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)"),   # Remove URLs
-         username = str_replace_all(username, "&amp;", "and"),                       # Replace &amp; with 'and'
-         username = str_remove_all(username, "[[:punct:]]"),                         # Remove punctuation
-         username = str_remove_all(username, "^RT:? "),                              # Remove 'RT:' at the beginning
-         username = str_remove_all(username, "@[[:alnum:]]+"),                       # Remove @mentions
-         username = str_remove_all(username, "#[[:alnum:]]+"),                       # Remove hashtags
-         username = str_replace_all(username, "\\\n", " "),                          # Replace newline characters with space
-         username = str_to_lower(username),                                          # Convert to lowercase
+  mutate(username = str_remove_all(username, " ?(f|ht)(tp)(s?)(://)(.*)[.|/](.*)"),   
+         username = str_replace_all(username, "&amp;", "and"),                       
+         username = str_remove_all(username, "[[:punct:]]"),                         
+         username = str_remove_all(username, "^RT:? "),                              
+         username = str_remove_all(username, "@[[:alnum:]]+"),                       
+         username = str_remove_all(username, "#[[:alnum:]]+"),                       
+         username = str_replace_all(username, "\\\n", " "),                          
+         username = str_to_lower(username),                                          
          username = str_trim(username, "both"),
          username = str_remove_all(username, "\\.\\.\\."),
          username = gsub("[^\x01-\x7F]", "", username))
 
 
-# Clean tweets
 cleaned_tweets_df <- tweets_df
 
 corpus <- VCorpus(VectorSource(cleaned_tweets_df$tweet))
@@ -93,15 +82,11 @@ daily_sentiment <- long_sentiments %>%
   summarise(sentiment_count = sum(count), .groups = 'drop') %>%
   pivot_wider(names_from = sentiments, values_from = sentiment_count, values_fill = list(sentiment_count = 0))
 
-# Assuming daily_sentiment is your summarized data frame from the previous steps
-# Convert the data frame back to long format for plotting
 long_daily_sentiment <- daily_sentiment %>%
   pivot_longer(cols = -`Alternate Date Format`, names_to = "sentiments", values_to = "count")
 
-# Display the long format for verification
 print(long_daily_sentiment)
 
-# Create the plot using ggplot2
 ggplot(data = long_daily_sentiment, aes(x = Date, y = count, color = sentiments, group = sentiments)) +
   geom_line() +                      # For line plot
   geom_point() +                     # Add points for better visualization
@@ -111,7 +96,6 @@ ggplot(data = long_daily_sentiment, aes(x = Date, y = count, color = sentiments,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels for readability
 
-# Create a bar plot using ggplot2
 ggplot(data = long_daily_sentiment, aes(x = Date, y = count, fill = sentiments)) +
   geom_bar(stat = "identity", position = "dodge") + # Dodge bars to separate them by sentiment
   labs(title = "Sentiment Counts by Date",
@@ -120,19 +104,11 @@ ggplot(data = long_daily_sentiment, aes(x = Date, y = count, fill = sentiments))
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels for readability
 
-# Load necessary libraries
-library(ggplot2)
-library(tidyr)
-
-# Assuming daily_sentiment is your summarized data frame from the previous steps
-# Convert the data frame back to long format for plotting
 long_daily_sentiment <- daily_sentiment %>%
   pivot_longer(cols = -Date, names_to = "sentiment", values_to = "count")
 
-# Display the long format for verification
 print(long_daily_sentiment)
 
-# Create the line graph using ggplot2
 ggplot(data = long_daily_sentiment, aes(x = Date, y = count, color = sentiments, group = sentiments)) +
   geom_line(size = 1.2) +                      # Add lines with a thicker size
   geom_point(size = 2) +                       # Add points for each data value
